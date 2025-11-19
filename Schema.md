@@ -1,7 +1,7 @@
 Dashboard schema
 
 
-![Dashboard schema](../images/dashboard_schema.PNG)
+![Dashboard schema](images/dashboard_schema.PNG)
 
 
 
