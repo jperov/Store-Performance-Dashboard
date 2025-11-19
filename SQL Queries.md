@@ -4,7 +4,7 @@
 The following queries were used to aggregate data used in the dashboard
 
 
-### #1 Gathering Metrics & Average Metrics Per Store & Month
+### Gathering Metrics & Average Metrics Per Store & Month
 
 ```SQL
 //example
@@ -15,4 +15,4 @@ table
 
 ```
 
-### #2 Top 5 Categories Per Store & Month
+### Top 5 Categories Per Store & Month
