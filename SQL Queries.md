@@ -56,6 +56,9 @@ order by location, date
 ```
 
 
+Example Output
+
+<img src="images/Daily_Sales_Example_Output.PNG" width="420" height="450" />
 
 
 
@@ -111,6 +114,10 @@ order by location, month, rn
 
 
 
+Example Output
+
+<img src="images/Top_Categories_Example_Output.PNG" width="510" height="530" />
+
 
 
 
@@ -164,6 +171,13 @@ order by location, month, rn
 
 
 ```
+
+
+
+Example Output
+
+<img src="images/Top_Products_Example_Output.PNG" width="600" height="620" />
+
 
 
 
@@ -446,5 +460,18 @@ USING(date)
 ORDER BY location, date;
 
 ```
+
+
+
+
+
+Example Output
+
+<img src="images/Monthly_Metrics_Example_Output.PNG" width="690" height="710" />
+
+
+
+
+
 
 
