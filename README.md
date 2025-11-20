@@ -21,3 +21,6 @@ This interactive dashboard was created to provide retial management and ownershi
 
 
 * link to interactive Tableau Dashboard
+
+*Data shown was anonymized to maintain confidentiality of real company data. 
+
