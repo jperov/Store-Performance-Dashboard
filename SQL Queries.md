@@ -1,6 +1,23 @@
 # SQL Queries
 
 
+
+The Schema used for our queries:
+
+
+<img src="images/dashboard_schema.PNG" width="295" height="320" />
+
+
+
+
+
+
+
+
+
+
+
+
 The following queries were used to aggregate data used in the dashboard
 
 
