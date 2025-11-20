@@ -21,10 +21,157 @@ The Schema used for our queries:
 The following queries were used to aggregate data used in the dashboard
 
 
-### Gathering Metrics & Average Metrics Per Store & Month
+
+
+
+### Total Sales & Tickets Per Store & Day
+
+
 
 ```SQL
---
+tickets AS (
+  SELECT
+    date, location,
+    COUNT(DISTINCT Ticket_Id) AS ticketcount
+  FROM base_data_clean
+  WHERE lower(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL
+  GROUP BY date, location
+)
+
+
+
+select
+location,
+date,
+MAX(ticketcount) as ticketcount,
+round(sum(Net_sales),2) as sales
+from
+base_data_clean
+LEFT JOIN tickets using(location, date)
+group by location, date
+order by location, date
+
+
+
+```
+
+
+
+
+
+
+### Top 5 Selling Categories Per Store & Month
+
+
+```SQL
+--make changes to column names casing, spacing, and comments and orgin table name
+
+--total sales per category / location / month
+Totals AS(
+SELECT
+Location,
+date_trunc(date, MONTH) as month,
+Category,
+sum(sales_before_tax) as CatSales
+FROM base_data_clean
+ group by location, month, Category
+),
+
+
+
+
+therows as(
+select
+Location,
+Month,
+Category,
+CatSales,
+row_number() over(partition by location, month order by CatSales desc) as rn
+from
+totals
+)
+
+
+
+
+select
+Location,
+Month,
+Category,
+CatSales,
+rn as CatRank
+from
+therows
+where rn < 6
+order by location, month, rn
+
+
+
+```
+
+
+
+
+
+
+
+
+### Top 10 Selling Products Per Store & Month
+
+
+```SQL
+
+--make changes to column names casing, spacing, and comments and orgin table name
+
+--total sales per category / location / month
+Totals AS(
+SELECT
+Location,
+date_trunc(date, MONTH) as month,
+Product_name,
+sum(sales_before_tax) as ProductSales
+FROM base_data_clean
+ group by location, month, Product_name
+),
+
+
+
+
+therows as(
+select
+Location,
+Month,
+Product_name,
+ProductSales,
+row_number() over(partition by location, month order by ProductSales desc) as rn
+from
+totals
+)
+
+
+
+
+select
+Location,
+Month,
+Product_name,
+round(ProductSales,2) as ProductSales,
+rn as ProductRank
+from
+therows
+where rn < 11
+order by location, month, rn
+
+
+```
+
+
+
+### Metrics & Average Metrics Per Store & Month
+
+```SQL
+
+--top to bottom Make changes to column names casing, spacing, and comments and orgin table name
 WITH Tickets AS(
   SELECT
     date,
@@ -300,4 +447,4 @@ ORDER BY location, date;
 
 ```
 
-### Top 5 Categories Per Store & Month
+
