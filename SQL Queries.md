@@ -201,9 +201,9 @@ Bag_dollars AS(
 
 net_sales_per_store AS (
   SELECT
-      Location,
-      Date,
-      ROUND(SUM(Net_sales), 2) AS Net_Sales
+    Location,
+    Date,
+    ROUND(SUM(Net_sales), 2) AS Net_Sales
   FROM YTD2025
   WHERE product_name <> 'Bag_Fee'
   GROUP BY Date, Location
@@ -234,24 +234,24 @@ upt_per_store AS (
     FROM YTD2025
       LEFT JOIN 
       tickets t USING(location, date)
-    WHERE
+  WHERE
     (lower(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL)
     AND
     (product_name <> 'Bag_Fee')
-    GROUP BY
-    Date, Location, Ticketcount
+  GROUP BY
+     Date, Location, Ticketcount
 ),
 
 
 
 SalesByCategory AS(
   SELECT
-  date,
-  Location,
+    date,
+    Location,
     -- Hat categories
-    SUM(CASE WHEN category IN ('VISOR', 'SNAPBACK', 'ROPER', 'A_FRAME', 'BUCKET', 'HATS',
-         'UNSTRUCTURED_ADJ', 'FITTED', 'FLEXONE_FITS', 'STRUCTURED_ADJ') 
-             THEN Quantity ELSE 0 END) AS Hats,
+      SUM(CASE WHEN category IN ('VISOR', 'SNAPBACK', 'ROPER', 'A_FRAME', 'BUCKET', 'HATS',
+      'UNSTRUCTURED_ADJ', 'FITTED', 'FLEXONE_FITS', 'STRUCTURED_ADJ') 
+      THEN Quantity ELSE 0 END) AS Hats,
 
 
     -- Hat Sprays with logic
@@ -276,10 +276,10 @@ SalesByCategory AS(
     (
       SUM(CASE
           WHEN LOWER(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity
-            WHEN Product_name = 'Jersey_Spray' THEN Quantity * 5
-            WHEN Product_name = '12oz_Repelwell'
-            OR product_name = 'DetraPel' THEN Quantity * 20
-            ELSE 0 END)
+          WHEN Product_name = 'Jersey_Spray' THEN Quantity * 5
+          WHEN Product_name = '12oz_Repelwell'
+          OR product_name = 'DetraPel' THEN Quantity * 20
+          ELSE 0 END)
       +
       SUM(CASE WHEN LOWER(product_name) IN('steamcurve', 'hat_spray_steam_bundle') THEN quantity ELSE 0 END)
       +
@@ -294,10 +294,10 @@ SalesByCategory AS(
     ROUND(((
           SUM(CASE
           WHEN lower(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity
-                WHEN Product_name = 'Jersey_Spray' THEN Quantity * 5
-                WHEN Product_name = '12oz_Repelwell'
-                OR product_name = 'DetraPel' THEN Quantity * 20
-                ELSE 0 END)
+          WHEN Product_name = 'Jersey_Spray' THEN Quantity * 5
+          WHEN Product_name = '12oz_Repelwell'
+          OR product_name = 'DetraPel' THEN Quantity * 20
+          ELSE 0 END)
           +
           SUM(CASE WHEN lower(product_name) IN('steamcurve', 'hat_spray_steam_bundle') THEN quantity ELSE 0 END)
           +
@@ -307,9 +307,9 @@ SalesByCategory AS(
         ) *100.0
         /
         NULLIF(
-          SUM(CASE WHEN Category IN ('SNAPBACK', 'ROPER', 'A_FRAME', 'BUCKET', 'HATS', 'VISOR',
-                 'UNSTRUCTURED_ADJ', 'FITTED', 'FLEXONE_FITS', 'STRUCTURED_ADJ') 
-                   THEN Quantity ELSE 0 END),
+        SUM(CASE WHEN Category IN ('SNAPBACK', 'ROPER', 'A_FRAME', 'BUCKET', 'HATS', 'VISOR',
+                                  'UNSTRUCTURED_ADJ', 'FITTED', 'FLEXONE_FITS', 'STRUCTURED_ADJ') 
+        THEN Quantity ELSE 0 END),
         0) ), 4
     ) AS Add_On_Percent,
 
@@ -319,11 +319,11 @@ SalesByCategory AS(
 
 
 
-ROUND(sum(case WHEN LOWER(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity else 0 END) *100.0
+ROUND(SUM(CASE WHEN LOWER(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity else 0 END) *100.0
 /
-NULLIF(sum(case when category IN('SNAPBACK', 'ROPER', 'A_FRAME', 'BUCKET', 'HATS', 'VISOR',
-                 'UNSTRUCTURED_ADJ', 'FITTED', 'FLEXONE_FITS', 'STRUCTURED_ADJ')
-                   THEN Quantity ELSE 0 END),0),2) as Hats_Sprayed_Percent,
+NULLIF(SUM(CASE WHEN category IN('SNAPBACK', 'ROPER', 'A_FRAME', 'BUCKET', 'HATS', 'VISOR',
+                                 'UNSTRUCTURED_ADJ', 'FITTED', 'FLEXONE_FITS', 'STRUCTURED_ADJ')
+                THEN Quantity ELSE 0 END),0),2) as Hats_Sprayed_Percent,
 
 
 
@@ -332,7 +332,9 @@ NULLIF(sum(case when category IN('SNAPBACK', 'ROPER', 'A_FRAME', 'BUCKET', 'HATS
 --Percent of jerseys sprayed sum of jerseys sprayed / sum of jerseys sold
 COALESCE(ROUND(SUM(CASE WHEN product_name = 'Jersey_Spray' THEN quantity else 0 end) *100.0
 /
-NULLIF(SUM(CASE WHEN LOWER(Product_Name) LIKE '%jersey%' OR lower(product_name) LIKE '%jerseys%' THEN Quantity ELSE 0 END),0),2),0) as Jerseys_Sprayed_Percent,
+NULLIF(SUM(CASE WHEN LOWER(Product_Name)
+                LIKE '%jersey%' OR lower(product_name) LIKE '%jerseys%'
+                THEN Quantity ELSE 0 END),0),2),0) as Jerseys_Sprayed_Percent,
 
 
 --Returns
@@ -439,7 +441,6 @@ USING(date)
 ORDER BY location, date;
 
 ```
-
 
 
 
