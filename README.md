@@ -20,7 +20,7 @@ This interactive dashboard was created to provide retial management and ownershi
 * YTD metric charts can be compared to the average store performance using the "Show Avg" dropdown. 
 
 
-* link to interactive Tableau Dashboard
+The interactive dashboard can be accessed [here](https://public.tableau.com/app/profile/jacob.perovich/viz/StorePerformanceDashboard_17636125179960/Dashboard#1)
 
 *Data shown was anonymized to maintain confidentiality of real company data. 
 
