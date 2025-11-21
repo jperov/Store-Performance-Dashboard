@@ -3,7 +3,7 @@
 
 ### Purpose
 
-This interactive dashboard was created to provide retial management and ownership with a complete picture of individual store, and overall company performance in key metrics overtime. 
+This interactive dashboard was created to provide retail management and ownership with a complete picture of individual store, and overall company performance in key metrics overtime. 
 
 
 ### Features:
