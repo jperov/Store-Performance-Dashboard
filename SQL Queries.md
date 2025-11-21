@@ -1,114 +1,97 @@
 # SQL Queries
 
 
-
-The Schema used for our queries:
+## Schema
+The table YTD2025 was used for our queries:
 
 
 <img src="images/dashboard_schema.PNG" width="295" height="320" />
 
 
+<br>
 
 
-
-
-
-
-
-
-
-
+## Queries
 The following queries were used to aggregate data used in the dashboard
 
-
-
-
+<br>
 
 ### Total Sales & Tickets Per Store & Day
 
 
 
 ```SQL
+--Gathers total ticket count per location & day. Ignores tickets from online orders.
 tickets AS (
   SELECT
     date, location,
     COUNT(DISTINCT Ticket_Id) AS ticketcount
-  FROM base_data_clean
+  FROM YTD2025
   WHERE lower(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL
   GROUP BY date, location
 )
 
 
-
-select
-location,
-date,
-MAX(ticketcount) as ticketcount,
-round(sum(Net_sales),2) as sales
-from
-base_data_clean
-LEFT JOIN tickets using(location, date)
-group by location, date
-order by location, date
-
-
+--Gathers total sales and tickets per location & day.
+SELECT
+  location,
+  date,
+  MAX(ticketcount) as ticketcount,
+  ROUND(SUM(Net_sales),2) as sales
+FROM
+YTD2025 
+  LEFT JOIN tickets using(location, date)
+GROUP BY location, date
+ORDER BY location, date
 
 ```
 
 
-Example Output
+Example Output:
 
 <img src="images/Daily_Sales_Example_Output.PNG" width="420" height="450" />
 
-
+<br>
 
 
 ### Top 5 Selling Categories Per Store & Month
 
 
 ```SQL
---make changes to column names casing, spacing, and comments and orgin table name
-
 --total sales per category / location / month
 Totals AS(
-SELECT
-Location,
-date_trunc(date, MONTH) as month,
-Category,
-sum(sales_before_tax) as CatSales
-FROM base_data_clean
- group by location, month, Category
+  SELECT
+    Location,
+    DATE_TRUNC(date, MONTH) as month,
+    Category,
+    SUM(Net_sales) as CatSales
+  FROM YTD2025 
+  GROUP BY location, month, Category
 ),
 
-
-
-
-therows as(
-select
-Location,
-Month,
-Category,
-CatSales,
-row_number() over(partition by location, month order by CatSales desc) as rn
-from
-totals
+--Assigns ranking to categories based on sales.
+ranking as(
+  SELECT
+    Location,
+    Month,
+    Category,
+    CatSales,
+    ROW_NUMBER() over(PARTITION BY location, month ORDER BY CatSales desc) as rn
+  FROM
+    totals
 )
 
-
-
-
-select
-Location,
-Month,
-Category,
-CatSales,
-rn as CatRank
-from
-therows
-where rn < 6
-order by location, month, rn
-
-
+--Displays only the top 5 categories.
+SELECT
+  Location,
+  Month,
+  Category,
+  CatSales,
+  rn as CatRank
+FROM
+  ranking
+WHERE rn < 6
+ORDER BY location, month, rn
 
 ```
 
@@ -118,10 +101,7 @@ Example Output
 
 <img src="images/Top_Categories_Example_Output.PNG" width="510" height="530" />
 
-
-
-
-
+<br>
 
 ### Top 10 Selling Products Per Store & Month
 
@@ -136,8 +116,8 @@ SELECT
 Location,
 date_trunc(date, MONTH) as month,
 Product_name,
-sum(sales_before_tax) as ProductSales
-FROM base_data_clean
+sum(Net_sales) as ProductSales
+FROM YTD2025
  group by location, month, Product_name
 ),
 
@@ -178,8 +158,7 @@ Example Output
 
 <img src="images/Top_Products_Example_Output.PNG" width="600" height="620" />
 
-
-
+<br>
 
 ### Metrics & Average Metrics Per Store & Month
 
