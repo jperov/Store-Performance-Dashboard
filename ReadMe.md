@@ -7,7 +7,7 @@ This interactive dashboard was created to provide retail management and ownershi
 
 
 ### Features:
-* KPI totals of Sales, DPT, UPT, and Total Upsells.
+* KPI totals of Sales, DPT, UPT, and Total Upsells for the selected month.
 * KPI percent changes displyaing the percent change to the selected month last year.
 * YTD line plots of key metrics with options to compare against last year or against the average store.
 
