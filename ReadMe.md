@@ -3,19 +3,18 @@
 
 ### Purpose
 
-This interactive dashboard was created to provide retail management and ownership with a complete picture of individual store, and overall company performance in key metrics overtime. 
+This interactive dashboard was created to provide retail management and the C-suite with a complete picture of individual store, and overall company performance in key metrics over time. 
 
 
 ### Features:
-* KPI totals of Sales, DPT, UPT, and Total Upsells for the selected month.
+* KPI totals of Sales, AOV, UPT, and Total Upsells for the selected month.
 * KPI percent changes displyaing the percent change to the selected month last year.
-* YTD line plots of key metrics with options to compare against last year or against the average store.
+* YTD line plots of key metrics with options to compare against last year.
 
 ### Functionality:
 * The Month selector controls the KPI bar and the first 3 charts.
 * The Store selector changes every chart in the dashboard to the selected store.
-* YTD metric charts can be compared to performance last year using the "Year" dropdown.
-* YTD metric charts can be compared to the average store performance using the "Show Avg" dropdown. 
+* YTD metric charts can be compared to performance last year using the "Year" dropdown. 
 
 <br>
 
