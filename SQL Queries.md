@@ -357,7 +357,7 @@ SELECT
   Location,
   date,
   Net_Sales,
-  AOV,
+  AOV AS DPT,
   UPT,
   Ticketcount,
   Hats,
