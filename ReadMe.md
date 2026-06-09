@@ -22,4 +22,4 @@ The interactive dashboard can be accessed [here](https://public.tableau.com/app/
 
 _*Data was anonymized to maintain confidentiality of real company data._    
 
-<img src="images/Anonymized_dashboard_screen.png" width="2000" height="3000" />
+<img src="images/Full sample dashboard img.jpeg" width="2000" height="3000" />
