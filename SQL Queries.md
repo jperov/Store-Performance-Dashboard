@@ -122,7 +122,7 @@ Totals AS(
 
 
 -- Assigns a ranking to products based on sales totals per store and month
-Rows as(
+ProductRankings as(
   SELECT
     Location,
     Month,
@@ -142,7 +142,7 @@ SELECT
   Product_name,
   ROUND(ProductSales,2) AS ProductSales,
   ProductRank
-FROM Rows
+FROM ProductRankings
 WHERE Product_Rank < 11
 ORDER BY location, month, Product_Rank
 
