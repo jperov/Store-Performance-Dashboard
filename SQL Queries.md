@@ -40,7 +40,7 @@ SELECT
   ROUND(SUM(Net_sales),2) as sales
 FROM
 YTD2025 
-  LEFT JOIN tickets using(location, date)
+  LEFT JOIN tickets USING(location, date)
 GROUP BY location, date
 ORDER BY location, date
 
@@ -58,7 +58,7 @@ Example Output:
 
 
 ```SQL
---total sales per category / location / month
+--total sales per category, location and month
 Totals AS(
   SELECT
     Location,
@@ -70,13 +70,13 @@ Totals AS(
 ),
 
 --Assigns ranking to categories based on sales.
-ranking AS(
+Ranking AS(
   SELECT
     Location,
     Month,
     Category,
     CatSales,
-    ROW_NUMBER() OVER(PARTITION BY location, month ORDER BY CatSales desc) AS CategoryRank
+    ROW_NUMBER() OVER(PARTITION BY location, month ORDER BY CatSales DESC) AS CategoryRank
   FROM
     totals
 )
@@ -108,7 +108,7 @@ Example Output
 
 ```SQL
 
---total sales per category / location / month
+--total sales per category, location and month
 Totals AS(
   SELECT
     Location,
@@ -116,7 +116,7 @@ Totals AS(
     Product_name,
     SUM(Net_sales) AS ProductSales
   FROM YTD2025
-  GROUP BY location, month, Product_name
+  GROUP BY location, month, product_name
 ),
 
 
@@ -183,17 +183,6 @@ DailySales AS (
 ),
 
 
---Gathers total sales from shopping bags to use later so bag sales don't count towards AOV and UPT metrics.
-Bag_dollars AS(
-  SELECT
-    date, location,
-    COALESCE(sum(Net_sales),0) as Bag_Fee
-  FROM YTD2025
-  WHERE Product_name = 'Bag_Fee'
-  GROUP BY date, location
-  ),
-
-
 
 net_sales_per_store AS (
   SELECT
@@ -213,10 +202,9 @@ avg_ticket_totals AS (
     Location,
     date,
     ROUND(
-    (COALESCE(fs.Sales,0) - COALESCE(b.Bag_Fee,0)) / NULLIF(ticketcount,0),2 ) AS AOV
+    fs.Sales / NULLIF(ticketcount,0),2 ) AS AOV
   FROM tickets
     LEFT JOIN DailySales fs USING(location, date)
-    LEFT JOIN Bag_dollars b USING(location, date)
 ),
 
 
@@ -250,7 +238,7 @@ SalesByCategory AS(
       THEN Quantity ELSE 0 END) AS Hats,
 
 
-    -- Hat Sprays with logic
+    -- Hat Sprays
     SUM(CASE
           WHEN LOWER(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity
           WHEN Product_name = 'Jersey_Spray' THEN Quantity * 5
@@ -289,7 +277,7 @@ SalesByCategory AS(
     -- Add_On % Rate
     ROUND(((
           SUM(CASE
-          WHEN lower(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity
+          WHEN LOWER(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity
           WHEN Product_name = 'Jersey_Spray' THEN Quantity * 5
           WHEN Product_name = '12oz_Repelwell'
           OR product_name = 'DetraPel' THEN Quantity * 20
@@ -384,8 +372,6 @@ SELECT
   Returns,
 
 FROM combined
-LEFT JOIN avgcombined
-USING(date)
 ORDER BY location, date;
 
 ```
