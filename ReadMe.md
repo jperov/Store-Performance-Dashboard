@@ -14,7 +14,7 @@ This interactive dashboard was created to provide retail management and the C-su
 ### Functionality:
 * The Month selector controls the KPI bar and the first 3 charts.
 * The Store selector changes every chart in the dashboard to the selected store.
-* YTD metric charts can be compared to performance last year using the "Year" dropdown. 
+* YTD metric charts can be compared to performance last year using the "Years Display" dropdown. 
 
 <br>
 
