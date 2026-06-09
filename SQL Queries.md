@@ -2,7 +2,7 @@
 
 
 ## Schema
-The table YTD2025 was used for our queries:
+Queries were performed on the table YTD2025:
 
 
 <img src="images/dashboard_schema.PNG" width="295" height="320" />
@@ -27,7 +27,7 @@ tickets AS (
     date, location,
     COUNT(DISTINCT Ticket_Id) AS ticketcount
   FROM YTD2025
-  WHERE lower(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL
+  WHERE LOWER(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL
   GROUP BY date, location
 )
 
@@ -62,21 +62,21 @@ Example Output:
 Totals AS(
   SELECT
     Location,
-    DATE_TRUNC(date, MONTH) as month,
+    DATE_TRUNC(date, MONTH) AS month,
     Category,
-    SUM(Net_sales) as CatSales
+    SUM(Net_sales) AS CatSales
   FROM YTD2025 
   GROUP BY location, month, Category
 ),
 
 --Assigns ranking to categories based on sales.
-ranking as(
+ranking AS(
   SELECT
     Location,
     Month,
     Category,
     CatSales,
-    ROW_NUMBER() over(PARTITION BY location, month ORDER BY CatSales desc) as rn
+    ROW_NUMBER() OVER(PARTITION BY location, month ORDER BY CatSales desc) AS CategoryRank
   FROM
     totals
 )
@@ -87,11 +87,11 @@ SELECT
   Month,
   Category,
   CatSales,
-  rn as CatRank
+  CategoryRank AS CatRrank
 FROM
   ranking
-WHERE rn < 6
-ORDER BY location, month, rn
+WHERE CategoryRank < 6
+ORDER BY location, month, CategoryRank
 
 ```
 
@@ -108,46 +108,43 @@ Example Output
 
 ```SQL
 
---make changes to column names casing, spacing, and comments and orgin table name
-
 --total sales per category / location / month
 Totals AS(
-SELECT
-Location,
-date_trunc(date, MONTH) as month,
-Product_name,
-sum(Net_sales) as ProductSales
-FROM YTD2025
- group by location, month, Product_name
+  SELECT
+    Location,
+    DATE_TRUNC(date, MONTH) AS month,
+    Product_name,
+    SUM(Net_sales) AS ProductSales
+  FROM YTD2025
+  GROUP BY location, month, Product_name
 ),
 
 
 
-
-therows as(
-select
-Location,
-Month,
-Product_name,
-ProductSales,
-row_number() over(partition by location, month order by ProductSales desc) as rn
-from
-totals
+-- Assigns a ranking to products based on sales totals per store and month
+Rows as(
+  SELECT
+    Location,
+    Month,
+    Product_name,
+    ProductSales,
+    ROW_NUMBER() OVER(PARTITION BY location, month ORDER BY ProductSales DESC) AS ProductRank
+  FROM
+    totals
 )
 
 
 
-
-select
-Location,
-Month,
-Product_name,
-round(ProductSales,2) as ProductSales,
-rn as ProductRank
-from
-therows
-where rn < 11
-order by location, month, rn
+--Filters to show only the top 10 products
+SELECT
+  Location,
+  Month,
+  Product_name,
+  ROUND(ProductSales,2) AS ProductSales,
+  ProductRank
+FROM Rows
+WHERE Product_Rank < 11
+ORDER BY location, month, Product_Rank
 
 
 ```
@@ -160,16 +157,16 @@ Example Output
 
 <br>
 
-### Metrics & Average Metrics Per Store & Month
+### Metrics Per Store & Month
 
 ```SQL
 
---top to bottom Make changes to column names casing, spacing, and comments and orgin table name
+-- Gathers store and day totals for tickets excluding ecommerce transactions. 
 WITH Tickets AS(
   SELECT
     date,
     location,
-    COUNT(DISTINCT ticket_id) as ticketcount
+    COUNT(DISTINCT ticket_id) AS ticketcount
   FROM YTD2025
   WHERE
     LOWER(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL
@@ -177,7 +174,7 @@ WITH Tickets AS(
 ),
 
 
-FranSales AS (
+DailySales AS (
   SELECT
     date, Location,
     ROUND(SUM(Net_sales), 2) AS Sales
@@ -186,7 +183,7 @@ FranSales AS (
 ),
 
 
-
+--Gathers total sales from shopping bags to use later so bag sales don't count towards AOV and UPT metrics.
 Bag_dollars AS(
   SELECT
     date, location,
@@ -197,7 +194,6 @@ Bag_dollars AS(
   ),
 
 
---Start of metrics
 
 net_sales_per_store AS (
   SELECT
@@ -211,15 +207,15 @@ net_sales_per_store AS (
 
 
 
-
+-- Calculates AOV per store and day.
 avg_ticket_totals AS (
   SELECT
     Location,
     date,
     ROUND(
-    (COALESCE(fs.Sales,0) - COALESCE(b.Bag_Fee,0)) / NULLIF(ticketcount,0),2 ) AS DPT
+    (COALESCE(fs.Sales,0) - COALESCE(b.Bag_Fee,0)) / NULLIF(ticketcount,0),2 ) AS AOV
   FROM tickets
-    LEFT JOIN FranSales fs USING(location, date)
+    LEFT JOIN DailySales fs USING(location, date)
     LEFT JOIN Bag_dollars b USING(location, date)
 ),
 
@@ -235,7 +231,7 @@ upt_per_store AS (
       LEFT JOIN 
       tickets t USING(location, date)
   WHERE
-    (lower(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL)
+    (LOWER(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL)
     AND
     (product_name <> 'Bag_Fee')
   GROUP BY
@@ -243,7 +239,7 @@ upt_per_store AS (
 ),
 
 
-
+--The following table calculates total quantities sold of key products and upsell metrics.
 SalesByCategory AS(
   SELECT
     date,
@@ -265,14 +261,14 @@ SalesByCategory AS(
 
 
 
-    -- Other accessories
+    -- Hat steams, pins and accessories.
     SUM(CASE WHEN LOWER(product_name) IN('steamcurve', 'hat_spray_steam_bundle') THEN quantity ELSE 0 END) AS Hat_Steams,
     SUM(CASE WHEN Category = 'HAT_PINS' THEN Quantity ELSE 0 END) AS Hat_Pins,
     SUM(CASE WHEN Category = 'HAT_ACCESSORIESADD-ONS' THEN Quantity ELSE 0 END) AS Hat_Accessories,
 
 
 
-    -- Total Accessories
+    -- Calculating Total Accessories
     (
       SUM(CASE
           WHEN LOWER(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity
@@ -315,30 +311,24 @@ SalesByCategory AS(
 
 
 
---Percentage of hats sprayed (sum of hat sprays / hats sold)
-
-
+--Percentage of hats sprayed (SUM of hat sprays / SUM of hats sold).
 
 ROUND(SUM(CASE WHEN LOWER(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity else 0 END) *100.0
 /
 NULLIF(SUM(CASE WHEN category IN('SNAPBACK', 'ROPER', 'A_FRAME', 'BUCKET', 'HATS', 'VISOR',
                                  'UNSTRUCTURED_ADJ', 'FITTED', 'FLEXONE_FITS', 'STRUCTURED_ADJ')
-                THEN Quantity ELSE 0 END),0),2) as Hats_Sprayed_Percent,
+                THEN Quantity ELSE 0 END),0),2) AS Hats_Sprayed_Percent,
 
 
-
-
-
---Percent of jerseys sprayed sum of jerseys sprayed / sum of jerseys sold
-COALESCE(ROUND(SUM(CASE WHEN product_name = 'Jersey_Spray' THEN quantity else 0 end) *100.0
+--Percent of jerseys sprayed (SUM of jerseys sprayed / SUM of jerseys sold).
+COALESCE(ROUND(SUM(CASE WHEN product_name = 'Jersey_Spray' THEN quantity ELSE 0 END) *100.0
 /
 NULLIF(SUM(CASE WHEN LOWER(Product_Name)
-                LIKE '%jersey%' OR lower(product_name) LIKE '%jerseys%'
-                THEN Quantity ELSE 0 END),0),2),0) as Jerseys_Sprayed_Percent,
+                LIKE '%jersey%' OR LOWER(product_name) LIKE '%jerseys%'
+                THEN Quantity ELSE 0 END),0),2),0) AS Jerseys_Sprayed_Percent,
 
-
---Returns
-SUM(CASE WHEN quantity <0 then quantity end) as returns
+-- Total Returns
+SUM(CASE WHEN quantity <0 THEN quantity END) AS returns
 
 FROM YTD2025
 GROUP BY date, location
@@ -350,7 +340,7 @@ combined AS(
   sbc.location,
   sbc.date,
   Net_Sales,
-  DPT,
+  AOV,
   UPT,
   ticketcount,
 
@@ -374,39 +364,12 @@ combined AS(
 ),
 
 
---Store Averages
 
-avgcombined AS(
-  SELECT
-    date,
-    ROUND(AVG(Net_Sales), 2) AS AVG_SALES,
-    ROUND(AVG(DPT), 2) AS AVG_DPT,
-    ROUND(AVG(UPT), 2) AS AVG_UPT,
-    ROUND(AVG(ticketcount), 2) AS AVG_Tickets,
-    ROUND(AVG(Hats), 2) AS Avg_Hats,
-    ROUND(AVG(Hat_Sprays), 2) AS Avg_Hat_Sprays,
-    ROUND(AVG(Hat_Steams), 2) AS Avg_Hat_Steams,
-    ROUND(AVG(Hat_Pins), 2) AS Avg_Hat_Pins,
-    ROUND(AVG(Hat_Accessories), 2) AS Avg_Hat_Accessories,
-    ROUND(AVG(Total_QT), 2) AS Avg_Total_QT,
-    ROUND(AVG(Add_On_Percent), 2) AS Avg_Add_On_Percent,
-    ROUND(AVG(Hats_Sprayed_Percent), 2) AS Avg_Hats_Sprayed_Percent,
-    ROUND(AVG(Jerseys_Sprayed_Percent), 2) AS Avg_Jerseys_Sprayed_Percent,
-    ROUND(AVG(returns), 2) AS Avg_Returns
-FROM
-combined
-GROUP BY date
-)
-
-
-
-
---Final Select
 SELECT
   Location,
   date,
   Net_Sales,
-  DPT,
+  AOV,
   UPT,
   Ticketcount,
   Hats,
@@ -419,21 +382,6 @@ SELECT
   Hats_Sprayed_Percent,
   Jerseys_Sprayed_Percent,
   Returns,
-
-  AVG_Sales,
-  AVG_DPT,
-  AVG_UPT,
-  AVG_Tickets,
-  AVG_Hats,
-  AVG_Hat_Sprays,
-  AVG_Hat_Steams,
-  AVG_Hat_Pins,
-  AVG_Hat_Accessories,
-  AVG_Total_QT,
-  AVG_Add_On_Percent,
-  AVG_Hats_Sprayed_Percent,
-  AVG_Jerseys_Sprayed_Percent,
-  AVG_Returns
 
 FROM combined
 LEFT JOIN avgcombined
