@@ -3,7 +3,7 @@
 
 ### Purpose
 
-This interactive dashboard was created to provide retail management and the C-suite with a complete picture of individual store, and overall company performance in key metrics over time. 
+This interactive dashboard was created to provide retail management and executives with a complete picture of both individual store, and overall company performance in key metrics over time. 
 
 
 ### Features:
