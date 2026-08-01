@@ -1,4 +1,4 @@
-# Store-Performance-Dashboard
+# Store Performance Dashboard
 
 
 ### Purpose
