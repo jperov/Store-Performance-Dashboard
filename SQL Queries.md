@@ -4,7 +4,7 @@
 * **Source:** item-level sales transactions across all stores (from POS provider)
 * **Time Period:** 2024 - September 2025
 * **Number of rows:** 700K
-* **Table Name:** "YTD2025"
+* **Table Name:** "2024YTD2025"
 
 **Schema**
 
@@ -15,7 +15,11 @@
 
 
 ## SQL Queries
-The following queries were used to aggregate data used in the dashboard
+The following queries were used to create four tables that were uploaded to Tableau and used in the dashboard:
+* Total Metrics Per Store & Month
+* Top 5 Selling Categories Per Store & Month
+* Top 5 Selling Products Per Store & Month
+* Total Sales & Tickets Per Store & Day
 
 <br>
 
@@ -24,12 +28,12 @@ The following queries were used to aggregate data used in the dashboard
 
 
 ```SQL
---Gathers total ticket count per location & day. Ignores tickets from online orders.
+--Calculates total ticket count per location & day while excluding online orders.
 tickets AS (
   SELECT
     date, location,
     COUNT(DISTINCT Ticket_Id) AS ticketcount
-  FROM YTD2025
+  FROM 2024YTD2025
   WHERE LOWER(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL
   GROUP BY date, location
 )
@@ -42,7 +46,7 @@ SELECT
   MAX(ticketcount) as ticketcount,
   ROUND(SUM(Net_sales),2) as sales
 FROM
-YTD2025 
+2024YTD2025 
   LEFT JOIN tickets USING(location, date)
 GROUP BY location, date
 ORDER BY location, date
@@ -68,7 +72,7 @@ Totals AS(
     DATE_TRUNC(date, MONTH) AS month,
     Category,
     SUM(Net_sales) AS CatSales
-  FROM YTD2025 
+  FROM 2024YTD2025 
   GROUP BY location, month, Category
 ),
 
@@ -93,7 +97,7 @@ SELECT
   CategoryRank AS CatRrank
 FROM
   ranking
-WHERE CategoryRank < 6
+WHERE CategoryRank <= 5
 ORDER BY location, month, CategoryRank
 
 ```
@@ -106,7 +110,7 @@ Example Output
 
 <br>
 
-### Top 10 Selling Products Per Store & Month
+### Top 5 Selling Products Per Store & Month
 
 
 ```SQL
@@ -118,7 +122,7 @@ Totals AS(
     DATE_TRUNC(date, MONTH) AS month,
     Product_name,
     SUM(Net_sales) AS ProductSales
-  FROM YTD2025
+  FROM 2024YTD2025
   GROUP BY location, month, product_name
 ),
 
@@ -146,7 +150,7 @@ SELECT
   ROUND(ProductSales,2) AS ProductSales,
   ProductRank
 FROM ProductRankings
-WHERE Product_Rank < 11
+WHERE Product_Rank <= 5
 ORDER BY location, month, Product_Rank
 
 
@@ -170,7 +174,7 @@ WITH Tickets AS(
     date,
     location,
     COUNT(DISTINCT ticket_id) AS ticketcount
-  FROM YTD2025
+  FROM 2024YTD2025
   WHERE
     LOWER(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL
   GROUP BY date, location
@@ -181,7 +185,7 @@ DailySales AS (
   SELECT
     date, Location,
     ROUND(SUM(Net_sales), 2) AS Sales
-  FROM YTD2025
+  FROM 2024YTD2025
   GROUP BY date, Location
 ),
 
@@ -192,7 +196,7 @@ net_sales_per_store AS (
     Location,
     Date,
     ROUND(SUM(Net_sales), 2) AS Net_Sales
-  FROM YTD2025
+  FROM 2024YTD2025
   WHERE product_name <> 'Bag_Fee'
   GROUP BY Date, Location
 ),
@@ -218,7 +222,7 @@ upt_per_store AS (
     Location,
     Date,
     ROUND(SUM(quantity) / NULLIF(ticketcount,0),2) AS UPT
-    FROM YTD2025
+    FROM 2024YTD2025
       LEFT JOIN 
       tickets t USING(location, date)
   WHERE
@@ -321,7 +325,7 @@ NULLIF(SUM(CASE WHEN LOWER(Product_Name)
 -- Total Returns
 SUM(CASE WHEN quantity <0 THEN quantity END) AS returns
 
-FROM YTD2025
+FROM 2024YTD2025
 GROUP BY date, location
 ),
 
