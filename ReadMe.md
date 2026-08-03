@@ -6,13 +6,13 @@
 This interactive dashboard was created to provide retail management and executives with a convenient and comprehensive view of both company and store-level performance across key metrics. The year-over-year view enables convenient evaluation of metric trends against historical results to identify areas for improvement.
 
 ### Features:
-* KPI bar showing totals of Sales, AOV, UPT, and upsells for the selected month.
+* The KPI bar shows totals of Sales, AOV, UPT, and Upsells for the selected month.
 * Percent changes next to metrics show whether that metric performed better or worse on the selected month last year.
 * YTD line plots show each metrics performance trend over time.
 
 ### Functionality:
-* "Store "Select" changes every chart in the dashboard to the selected store.
-* "Month Select" determines which months metrics are displayed on the KPI bar as well as the first 3 charts (Top 5 & Daily Sales Charts).
+* "Store Select" changes every chart in the dashboard to the selected store.
+* "Month Select" determines which months metrics are displayed on the KPI bar as well as the Top 5 and Daily Sales Charts.
 * YTD metric charts can be compared to performance last year using the "Year Select" dropdown. 
 
 <br>
