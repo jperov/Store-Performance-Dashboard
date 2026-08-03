@@ -1,9 +1,12 @@
-# SQL Queries
 
+## Dataset
 
-## Schema
-Queries were performed on the table YTD2025:
+* **Source:** item-level sales transactions across all stores (from POS provider)
+* **Time Period:** 2024 - September 2025
+* **Number of rows:** 700K
+* **Table Name:** "YTD2025"
 
+**Schema**
 
 <img src="images/dashboard_schema.PNG" width="295" height="320" />
 
@@ -11,7 +14,7 @@ Queries were performed on the table YTD2025:
 <br>
 
 
-## Queries
+## SQL Queries
 The following queries were used to aggregate data used in the dashboard
 
 <br>
