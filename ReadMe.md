@@ -1,7 +1,7 @@
 # Store Performance Dashboard
 
 
-### Purpose
+### Purpose:
 
 This interactive dashboard was created to provide retail management and executives with a convenient and comprehensive view of both company and store-level performance across key metrics. The year-over-year view enables convenient evaluation of metric trends against historical results to identify areas for improvement.
 
