@@ -32,7 +32,7 @@ The following queries were used to create four tables that were uploaded to Tabl
 tickets AS (
   SELECT
     date, location,
-    COUNT(DISTINCT Ticket_Id) AS ticketcount
+    COUNT(DISTINCT Ticket_Id) AS Tickets
   FROM 2024YTD2025
   WHERE LOWER(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL
   GROUP BY date, location
@@ -43,7 +43,7 @@ tickets AS (
 SELECT
   location,
   date,
-  MAX(ticketcount) as ticketcount,
+  MAX(Tickets) as Tickets,
   ROUND(SUM(Net_sales),2) as sales
 FROM
 2024YTD2025 
@@ -169,11 +169,11 @@ Example Output
 ```SQL
 
 -- Gathers store and day totals for tickets excluding ecommerce transactions. 
-WITH Tickets AS(
+WITH TotalTickets AS(
   SELECT
     date,
     location,
-    COUNT(DISTINCT ticket_id) AS ticketcount
+    COUNT(DISTINCT ticket_id) AS Tickets
   FROM 2024YTD2025
   WHERE
     LOWER(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL
@@ -203,34 +203,34 @@ net_sales_per_store AS (
 
 
 
--- Calculates AOV per store and day.
+-- Calculates Average Order Value (AOV) per store and day.
 avg_ticket_totals AS (
   SELECT
     Location,
     date,
     ROUND(
-    fs.Sales / NULLIF(ticketcount,0),2 ) AS AOV
-  FROM tickets
+    fs.Sales / NULLIF(Tickets,0),2 ) AS AOV
+  FROM TotalTickets
     LEFT JOIN DailySales fs USING(location, date)
 ),
 
 
 
-
+--Calculates Units Per Transaction (UPT) per store and day
 upt_per_store AS (
   SELECT
     Location,
     Date,
-    ROUND(SUM(quantity) / NULLIF(ticketcount,0),2) AS UPT
+    ROUND(SUM(quantity) / NULLIF(Tickets,0),2) AS UPT
     FROM 2024YTD2025
       LEFT JOIN 
-      tickets t USING(location, date)
+      TotalTickets t USING(location, date)
   WHERE
     (LOWER(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL)
     AND
     (product_name <> 'Bag_Fee')
   GROUP BY
-     Date, Location, Ticketcount
+     Date, Location, Tickets
 ),
 
 
@@ -240,9 +240,11 @@ SalesByCategory AS(
     date,
     Location,
     -- Hat categories
-      SUM(CASE WHEN category IN ('VISOR', 'SNAPBACK', 'ROPER', 'A_FRAME', 'BUCKET', 'HATS',
+      SUM(CASE
+      WHEN category IN ('VISOR', 'SNAPBACK', 'ROPER', 'A_FRAME', 'BUCKET', 'HATS',
       'UNSTRUCTURED_ADJ', 'FITTED', 'FLEXONE_FITS', 'STRUCTURED_ADJ') 
-      THEN Quantity ELSE 0 END) AS Hats,
+      THEN Quantity
+      ELSE 0 END) AS Hats,
 
 
     -- Hat Sprays
@@ -250,9 +252,9 @@ SalesByCategory AS(
           WHEN LOWER(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity
           WHEN Product_name = 'Jersey_Spray' THEN Quantity * 5
           WHEN Product_name = '12oz_Repelwell'
-          OR product_name = 'DetraPel' THEN Quantity * 20
-          ELSE 0
-        END) AS Hat_Sprays,
+          OR product_name = 'DetraPel'
+          THEN Quantity * 20
+          ELSE 0 END) AS Hat_Sprays,
 
 
 
@@ -281,7 +283,7 @@ SalesByCategory AS(
 
 
 
-    -- Add_On % Rate
+    -- Add-On-% Rate = (total add-on items / hats sold) 
     ROUND(((
           SUM(CASE
           WHEN LOWER(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity
@@ -305,23 +307,6 @@ SalesByCategory AS(
     ) AS Add_On_Percent,
 
 
-
---Percentage of hats sprayed (SUM of hat sprays / SUM of hats sold).
-
-ROUND(SUM(CASE WHEN LOWER(product_name) IN('hat_spray', 'hat_spray_steam_bundle') THEN quantity else 0 END) *100.0
-/
-NULLIF(SUM(CASE WHEN category IN('SNAPBACK', 'ROPER', 'A_FRAME', 'BUCKET', 'HATS', 'VISOR',
-                                 'UNSTRUCTURED_ADJ', 'FITTED', 'FLEXONE_FITS', 'STRUCTURED_ADJ')
-                THEN Quantity ELSE 0 END),0),2) AS Hats_Sprayed_Percent,
-
-
---Percent of jerseys sprayed (SUM of jerseys sprayed / SUM of jerseys sold).
-COALESCE(ROUND(SUM(CASE WHEN product_name = 'Jersey_Spray' THEN quantity ELSE 0 END) *100.0
-/
-NULLIF(SUM(CASE WHEN LOWER(Product_Name)
-                LIKE '%jersey%' OR LOWER(product_name) LIKE '%jerseys%'
-                THEN Quantity ELSE 0 END),0),2),0) AS Jerseys_Sprayed_Percent,
-
 -- Total Returns
 SUM(CASE WHEN quantity <0 THEN quantity END) AS returns
 
@@ -337,7 +322,7 @@ combined AS(
   Net_Sales,
   AOV,
   UPT,
-  ticketcount,
+  Tickets,
 
   sbc.Hats,
   sbc.Hat_Sprays,
@@ -346,8 +331,6 @@ combined AS(
   sbc.Hat_Accessories,
   sbc.Total_QT,
   sbc.Add_On_Percent,
-  Hats_Sprayed_Percent,
-  Jerseys_Sprayed_Percent,
   Returns
 
 
@@ -355,18 +338,18 @@ combined AS(
     LEFT JOIN avg_ticket_totals avg ON avg.date = sbc.date AND avg.location = sbc.location
     LEFT JOIN upt_per_store uptt ON uptt.date = sbc.date AND uptt.location = sbc.location
     LEFT JOIN net_sales_per_store net ON net.date = sbc.date AND net.location = sbc.location
-    LEFT JOIN tickets t ON t.date = sbc.date AND t.location = sbc.location
+    LEFT JOIN TotalTickets t ON t.date = sbc.date AND t.location = sbc.location
 ),
 
 
 
 SELECT
   Location,
-  date,
+  Date,
   Net_Sales,
-  AOV AS DPT,
+  AOV,
   UPT,
-  Ticketcount,
+  Tickets,
   Hats,
   Hat_Sprays,
   Hat_Steams,
@@ -374,8 +357,6 @@ SELECT
   Hat_Accessories,
   Total_QT,
   Add_On_Percent,
-  Hats_Sprayed_Percent,
-  Jerseys_Sprayed_Percent,
   Returns,
 
 FROM combined
