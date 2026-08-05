@@ -4,11 +4,11 @@
 * **Source:** item-level sales transactions across all stores (from POS provider)
 * **Time Period:** 2024 - September 2025
 * **Number of rows:** 700K
-* **Table Name:** "2024YTD2025"
+* **Table Name:** "Sales_2024_YTD2025"
 
-**Schema**
+  **Schema**
 
-<img src="images/dashboard_schema.PNG" width="295" height="320" />
+  <img src="images/dashboard_schema.PNG" width="295" height="320" />
 
 
 <br>
@@ -33,7 +33,7 @@ tickets AS (
   SELECT
     date, location,
     COUNT(DISTINCT Ticket_Id) AS Tickets
-  FROM 2024YTD2025
+  FROM Sales_2024_YTD2025
   WHERE LOWER(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL
   GROUP BY date, location
 )
@@ -46,7 +46,7 @@ SELECT
   MAX(Tickets) as Tickets,
   ROUND(SUM(Net_sales),2) as sales
 FROM
-2024YTD2025 
+Sales_2024_YTD2025 
   LEFT JOIN tickets USING(location, date)
 GROUP BY location, date
 ORDER BY location, date
@@ -72,7 +72,7 @@ Totals AS(
     DATE_TRUNC(date, MONTH) AS month,
     Category,
     SUM(Net_sales) AS CatSales
-  FROM 2024YTD2025 
+  FROM Sales_2024_YTD2025 
   GROUP BY location, month, Category
 ),
 
@@ -122,7 +122,7 @@ Totals AS(
     DATE_TRUNC(date, MONTH) AS month,
     Product_name,
     SUM(Net_sales) AS ProductSales
-  FROM 2024YTD2025
+  FROM Sales_2024_YTD2025
   GROUP BY location, month, product_name
 ),
 
@@ -174,7 +174,7 @@ WITH TotalTickets AS(
     date,
     location,
     COUNT(DISTINCT ticket_id) AS Tickets
-  FROM 2024YTD2025
+  FROM Sales_2024_YTD2025
   WHERE
     LOWER(payment_methods) <> 'ecommerce payment' OR payment_methods IS NULL
   GROUP BY date, location
@@ -185,7 +185,7 @@ DailySales AS (
   SELECT
     date, Location,
     ROUND(SUM(Net_sales), 2) AS Sales
-  FROM 2024YTD2025
+  FROM Sales_2024_YTD2025
   GROUP BY date, Location
 ),
 
@@ -196,7 +196,7 @@ net_sales_per_store AS (
     Location,
     Date,
     ROUND(SUM(Net_sales), 2) AS Net_Sales
-  FROM 2024YTD2025
+  FROM Sales_2024_YTD2025
   WHERE product_name <> 'Bag_Fee'
   GROUP BY Date, Location
 ),
@@ -222,7 +222,7 @@ upt_per_store AS (
     Location,
     Date,
     ROUND(SUM(quantity) / NULLIF(Tickets,0),2) AS UPT
-    FROM 2024YTD2025
+    FROM Sales_2024_YTD2025
       LEFT JOIN 
       TotalTickets t USING(location, date)
   WHERE
@@ -310,7 +310,7 @@ SalesByCategory AS(
 -- Total Returns
 SUM(CASE WHEN quantity <0 THEN quantity END) AS returns
 
-FROM 2024YTD2025
+FROM Sales_2024_YTD2025
 GROUP BY date, location
 ),
 
