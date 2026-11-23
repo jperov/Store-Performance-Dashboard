@@ -3,7 +3,7 @@
 
 ### Purpose:
 
-This interactive dashboard was created to provide retail management and executives with a convenient and comprehensive view of both company and store-level performance across key metrics. The year-over-year view enables convenient evaluation of metric trends against historical results to identify areas for improvement.
+This interactive dashboard was created to provide retail management and executives with a convenient and comprehensive view of both company and store-level performance across key metrics, enabling evaluation of metric trends against historical results to identify top performers and areas for improvement.
 
 ### Features:
 * The KPI bar shows totals of Sales, AOV, UPT, and Upsells for the selected month.
